@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/calculator/calculation.dart';
-import 'package:taxratesystem_mobile/calculator/history_store.dart';
 import 'package:taxratesystem_mobile/calculator/widgets/breakdown_card.dart';
 import 'package:taxratesystem_mobile/calculator/widgets/details_card.dart';
 import 'package:taxratesystem_mobile/calculator/widgets/summary_banner.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
+import 'package:taxratesystem_mobile/constants/app_decorations.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/di/dependency_scope.dart';
+import 'package:taxratesystem_mobile/core/formatters/tax_formatters.dart';
+import 'package:taxratesystem_mobile/domain/models/saved_calculation.dart';
+import 'package:taxratesystem_mobile/domain/models/tax_calculation.dart';
+import 'package:taxratesystem_mobile/presentation/controllers/history_controller.dart';
 
 class CalculationResultScreen extends StatelessWidget {
   const CalculationResultScreen({super.key, required this.calculation});
 
   final TaxCalculation calculation;
 
-  void _save(BuildContext context) {
-    HistoryStore.instance.add(
-      SavedCalculation(
-        calculation: calculation,
-        savedAt: DateTime.now(),
-      ),
+  /// Persists through the injected [HistoryController]; the screen never reaches
+  /// for a global store, which is what previously made this untestable.
+  Future<void> _save(BuildContext context) async {
+    final HistoryController history = context.dependencies.historyController;
+    await history.save(
+      SavedCalculation(calculation: calculation, savedAt: DateTime.now()),
     );
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Calculation saved to history'),
+        content: Text(AppStrings.calculationSaved),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -37,7 +43,7 @@ class CalculationResultScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back, color: AppColors.textDark),
         ),
         title: Text(
-          'Calculation Result',
+          AppStrings.calculationResultTitle,
           style: TextStyle(
             fontSize: AppDimens.bodyFontSize,
             fontWeight: FontWeight.bold,
@@ -55,16 +61,7 @@ class CalculationResultScreen extends StatelessWidget {
           AppDimens.pageHorizontalPadding,
           12,
         ),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
+        decoration: AppDecorations.bottomBar,
         child: SafeArea(
           child: Row(
             children: [
@@ -75,7 +72,7 @@ class CalculationResultScreen extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.refresh, size: 20),
                     label: const Text(
-                      'Calculate Again',
+                      AppStrings.calculateAgain,
                       style: TextStyle(
                         fontSize: AppDimens.smallFontSize,
                         fontWeight: FontWeight.w600,
@@ -100,7 +97,7 @@ class CalculationResultScreen extends StatelessWidget {
                     onPressed: () => _save(context),
                     icon: const Icon(Icons.bookmark_add_outlined, size: 20),
                     label: const Text(
-                      'Save Calculation',
+                      AppStrings.saveCalculation,
                       style: TextStyle(
                         fontSize: AppDimens.smallFontSize,
                         fontWeight: FontWeight.w600,
@@ -128,16 +125,22 @@ class CalculationResultScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SummaryBanner(
-              taxType: calculation.taxType,
-              amountLabel: 'Calculated Tax Amount',
+              taxType: calculation.taxType.label,
+              amountLabel: AppStrings.calculatedTaxAmountLabel,
               amount: formatMoney(calculation.calculatedTax),
             ),
             const SizedBox(height: 16),
             DetailsCard(
               rows: [
-                ('Taxable Income', formatMoney(calculation.taxableIncome)),
-                ('Applicable Bracket', calculation.applicableBracket),
-                ('Effective Rule', calculation.effectiveRule),
+                (
+                  AppStrings.taxableIncomeDetailLabel,
+                  formatMoney(calculation.taxableIncome),
+                ),
+                (
+                  AppStrings.applicableBracketLabel,
+                  calculation.applicableBracket,
+                ),
+                (AppStrings.effectiveRuleLabel, calculation.effectiveRule),
               ],
             ),
             const SizedBox(height: 16),

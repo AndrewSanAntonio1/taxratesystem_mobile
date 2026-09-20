@@ -26,14 +26,41 @@ class AppColors {
   static const Color navInactive = Color(0xFF94A3B8);
   static const Color navActive = Color(0xFF2563EB);
 
-  static Color get surface => const Color(0xFFFFFFFF);
-  static Color get textDark => const Color(0xFF1A1A2E);
-  static Color get textSecondary => const Color(0xFFB0BEC5);
-  static Color get inputSoft => const Color(0xFFF8FAFC);
-  static Color get inputFill => const Color(0xFFF5F5F5);
-  static Color get divider => const Color(0xFFE0E0E0);
-  static Color get inputBorder => const Color(0xFFBDBDBD);
-  static Color get pageBackground => const Color(0xFFF8F9FA);
-  static Color get headerBackground => const Color(0xFFE8F0FE);
-  static Color get exampleTint => const Color(0xFFE6F7F5);
+  // Declared `const` (not as getters) so they can be used inside `const`
+  // constructors — e.g. `const Icon(Icons.chevron_right, color: AppColors.textSecondary)`.
+  // The previous getters silently forbade that, which is what forced widgets to
+  // duplicate colour literals instead of reusing this palette.
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color textDark = Color(0xFF1A1A2E);
+  static const Color textSecondary = Color(0xFFB0BEC5);
+  static const Color inputSoft = Color(0xFFF8FAFC);
+  static const Color inputFill = Color(0xFFF5F5F5);
+  static const Color divider = Color(0xFFE0E0E0);
+  static const Color inputBorder = Color(0xFFBDBDBD);
+
+  /// Idle rule under a verification-code slot in `verification.png` (#CBCBCB
+  /// sampled there). [divider] is too pale to read as an input rule and
+  /// [inputBorder] is the outline of the boxed fields, so the underline slots of
+  /// the redesigned verification screens use this one.
+  static const Color inputUnderline = Color(0xFFCBCBCB);
+  static const Color pageBackground = Color(0xFFF8F9FA);
+  static const Color headerBackground = Color(0xFFE8F0FE);
+  static const Color exampleTint = Color(0xFFE6F7F5);
+
+  // Colours sampled from the auth redesign reference (`forgot-password.png`):
+  // its mint input fill (#F4FCF9), brand action green (#00BF6E) and the
+  // mid-tone grey of its helper copy (#616161).
+  //
+  // They live here rather than inline in the screen so the next redesigned
+  // screen reuses the same fill/CTA instead of re-sampling the mockup.
+
+  /// Filled, borderless input surface used by the single-task auth forms.
+  static const Color inputMint = Color(0xFFF4FCF9);
+
+  /// Fill of the primary call to action on the auth forms.
+  static const Color actionGreen = Color(0xFF00BF6E);
+
+  /// Helper/secondary paragraph copy. [textSecondary] (#B0BEC5) is too light to
+  /// stay readable on a white surface, so supporting copy uses this instead.
+  static const Color textMuted = Color(0xFF64748B);
 }

@@ -1,31 +1,48 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/constants/app_colors.dart';
-import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-import 'package:taxratesystem_mobile/widgets/branded_header.dart';
-import 'package:taxratesystem_mobile/widgets/dash_divider.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
 import 'package:taxratesystem_mobile/widgets/otp_input_field.dart';
-import 'package:taxratesystem_mobile/widgets/primary_button.dart';
-import 'package:taxratesystem_mobile/widgets/secondary_button.dart';
-import 'package:taxratesystem_mobile/auth/new_password_screen.dart';
+import 'package:taxratesystem_mobile/widgets/resend_code_area.dart';
+import 'package:taxratesystem_mobile/widgets/verification_code_view.dart';
 
+/// Step 2 of password recovery: confirm the code sent to the account's email.
+///
+/// Redesigned to the same `verification.png` reference as the registration step
+/// ([OtpVerificationScreen]), so the two screens that both ask the user to verify
+/// their account no longer drift: same brand mark, same copy rhythm, same
+/// underline code slots and green CTA.
+///
+/// The flow is unchanged: a typed code continues to the new-password step
+/// ([AppNavigation.openNewPassword]). The address the user typed on the previous
+/// step travels with the route (see `PasswordResetOtpArgs`), so the destination
+/// line names it; a route opened without one falls back to a generic phrase.
 class PasswordResetOtpScreen extends StatefulWidget {
-  const PasswordResetOtpScreen({super.key});
+  const PasswordResetOtpScreen({super.key, this.email = ''});
+
+  /// Address collected by the forgot-password step: the destination of the code,
+  /// named under the helper line.
+  final String email;
 
   @override
   State<PasswordResetOtpScreen> createState() => _PasswordResetOtpScreenState();
 }
 
 class _PasswordResetOtpScreenState extends State<PasswordResetOtpScreen> {
-  final _otpKey = GlobalKey<OtpInputFieldState>();
+  final GlobalKey<OtpInputFieldState> _otpKey = GlobalKey<OtpInputFieldState>();
+
+  /// Repaints the resend cooldown once a second; the countdown itself is owned by
+  /// [OtpInputField], so this screen only mirrors its state into
+  /// [ResendCodeArea].
   Timer? _uiTimer;
 
   @override
   void initState() {
     super.initState();
     _uiTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
+      if (!mounted) return;
+      setState(() {});
     });
   }
 
@@ -37,112 +54,31 @@ class _PasswordResetOtpScreenState extends State<PasswordResetOtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final otpState = _otpKey.currentState;
-    final canResend = otpState?.canResend ?? false;
-    final secondsRemaining = otpState?.secondsRemaining ?? 0;
-
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      bottomNavigationBar: Material(
-        color: AppColors.surface,
-        elevation: 8,
-        child: SafeArea(
-          minimum: const EdgeInsets.fromLTRB(
-            AppDimens.footerPaddingH,
-            AppDimens.footerPaddingV,
-            AppDimens.footerPaddingH,
-            AppDimens.footerPaddingV,
-          ),
-          child: SecondaryButton(
-            text: 'Back',
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
+    return VerificationCodeView(
+      title: AppStrings.verifyAccountTitle,
+      message: AppStrings.verifyCodeSentTo,
+      destination: VerificationCodeView.destinationFor(widget.email),
+      codeField: OtpInputField(
+        key: _otpKey,
+        style: OtpFieldStyle.underlined,
+        obscureDigits: true,
+        autofocus: true,
+        onChanged: (_) {},
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            AppDimens.pageHorizontalPadding,
-            AppDimens.pageTopPadding,
-            AppDimens.pageHorizontalPadding,
-            AppDimens.pageBottomPadding,
-          ),
-          child: Column(
-            children: [
-              const BrandedHeader(),
-              const SizedBox(height: 16),
-              const DashDivider(activeIndex: 1),
-              const SizedBox(height: 20),
-              Text(
-                'Verify Your Account',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppDimens.titleFontSize,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Enter the 6-digit code sent to your email.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppDimens.subtitleFontSize,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 32),
-              OtpInputField(
-                key: _otpKey,
-                onChanged: (_) {},
-              ),
-              const SizedBox(height: 24),
-              _buildResendArea(canResend: canResend, secondsRemaining: secondsRemaining),
-              const SizedBox(height: 28),
-              PrimaryButton(
-                text: 'Verify',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NewPasswordScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      resendArea: _buildResendArea(),
+      actionLabel: AppStrings.verifyAction,
+      onAction: () => context.openNewPassword(),
+      backLabel: AppStrings.back,
+      onBack: () => Navigator.pop(context),
     );
   }
 
-  Widget _buildResendArea({required bool canResend, required int secondsRemaining}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: canResend ? () => _otpKey.currentState?.resend() : null,
-          child: Text(
-            'Resend Code',
-            style: TextStyle(
-              fontSize: AppDimens.subtitleFontSize,
-              fontWeight: FontWeight.w600,
-              color: canResend ? AppColors.lightBlue : AppColors.textSecondary,
-            ),
-          ),
-        ),
-        if (!canResend) ...[
-          const SizedBox(width: 8),
-          Text(
-            'Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}',
-            style: TextStyle(
-              fontSize: AppDimens.smallFontSize,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ],
+  Widget _buildResendArea() {
+    final OtpInputFieldState? state = _otpKey.currentState;
+    return ResendCodeArea(
+      canResend: state?.canResend ?? false,
+      secondsRemaining: state?.secondsRemaining ?? 0,
+      onResend: () => state?.resend(),
     );
   }
 }

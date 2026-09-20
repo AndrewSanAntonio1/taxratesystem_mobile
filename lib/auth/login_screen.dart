@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-import 'package:taxratesystem_mobile/auth/register_screen.dart';
-import 'package:taxratesystem_mobile/auth/forgot_password_screen.dart';
-import 'package:taxratesystem_mobile/home/home_shell.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/di/dependency_scope.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
+import 'package:taxratesystem_mobile/presentation/controllers/session_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         _buildLogo(),
                         const SizedBox(height: 11),
                         Text(
-                          'Hello, Welcome back!',
+                          AppStrings.helloWelcomeBack,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: AppDimens.bodyFontSize,
@@ -165,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Email is required';
+                return AppStrings.emailRequired;
               }
               return null;
             },
@@ -190,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Password is required';
+                return AppStrings.passwordRequired;
               }
               return null;
             },
@@ -199,14 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ForgotPasswordScreen(),
-                  ),
-                );
-              },
+              onPressed: () => context.openForgotPassword(),
               child: Text(
                 'Forgot Password?',
                 style: TextStyle(
@@ -221,49 +215,107 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _handleLogin(SessionController session) async {
+    if (!_formKey.currentState!.validate()) return;
+    final bool succeeded = await session.signIn(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+    if (!mounted) return;
+    if (succeeded) context.replaceWithHome();
+  }
+
   Widget _buildLoginButton() {
+    final SessionController session = context.dependencies.sessionController;
+    return ListenableBuilder(
+      listenable: session,
+      builder: (context, _) {
+        final bool isSubmitting = session.state.isLoading;
+        final String? error = session.errorMessage;
+        return Column(
+          children: [
+            if (error != null) ...[
+              _buildAuthError(error),
+              const SizedBox(height: 12),
+            ],
+            Container(
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(AppDimens.borderRadiusMedium),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: AppDimens.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: isSubmitting ? null : () => _handleLogin(session),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.textPrimary,
+                    disabledBackgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppDimens.borderRadiusMedium),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppColors.textPrimary,
+                          ),
+                        )
+                      : const Text(
+                          AppStrings.login,
+                          style: TextStyle(
+                            fontSize: AppDimens.bodyFontSize,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'serif',
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Inline failure banner for rejected credentials (the error state of the
+  /// sign-in request, as opposed to per-field validation errors).
+  Widget _buildAuthError(String message) {
     return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimens.borderRadiusMedium),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, size: 18, color: AppColors.error),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                fontSize: AppDimens.smallFontSize,
+                color: AppColors.error,
+              ),
+            ),
           ),
         ],
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        height: AppDimens.buttonHeight,
-        child: ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const HomeShell(),
-                ),
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textPrimary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimens.borderRadiusMedium),
-            ),
-            elevation: 0,
-          ),
-          child: const Text(
-            'Login',
-            style: TextStyle(
-              fontSize: AppDimens.bodyFontSize,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'serif',
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -275,14 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
           width: double.infinity,
           height: AppDimens.buttonHeight,
           child: OutlinedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const RegisterScreen(),
-                ),
-              );
-            },
+            onPressed: () => context.openRegister(),
             style: OutlinedButton.styleFrom(
               backgroundColor: AppColors.surface,
               foregroundColor: AppColors.textDark,
@@ -292,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             child: const Text(
-              'Create new account',
+              AppStrings.createNewAccount,
               style: TextStyle(
                 fontSize: AppDimens.bodyFontSize,
                 fontWeight: FontWeight.bold,
@@ -314,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 TextSpan(text: 'By tapping '),
                 TextSpan(
-                  text: 'Create new account',
+                  text: AppStrings.createNewAccount,
                   style: TextStyle(
                     color: AppColors.textDark,
                     fontWeight: FontWeight.bold,

@@ -1,122 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/auth/login_screen.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-import 'package:taxratesystem_mobile/profile/change_password_screen.dart';
-import 'package:taxratesystem_mobile/profile/notification_settings_screen.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/di/dependency_scope.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
+import 'package:taxratesystem_mobile/domain/models/app_user.dart';
+import 'package:taxratesystem_mobile/presentation/controllers/session_controller.dart';
 import 'package:taxratesystem_mobile/widgets/settings_tile.dart';
 
+/// Profile and settings.
+///
+/// Reads the identity from [SessionController] (the same instance the login
+/// screen writes to) instead of rendering a hardcoded name, so the profile
+/// always reflects who actually signed in.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _confirmLogout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+  Future<void> _confirmLogout(
+    BuildContext context,
+    SessionController session,
+  ) async {
+    final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to log out?'),
+        title: const Text(AppStrings.logout),
+        content: const Text(AppStrings.logoutConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+            child: const Text(AppStrings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Logout'),
+            child: const Text(AppStrings.logout),
           ),
         ],
       ),
     );
-    if (confirmed == true && context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
-    }
+    if (confirmed != true || !context.mounted) return;
+
+    await session.signOut();
+    if (!context.mounted) return;
+    context.replaceWithLogin();
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: scheme.surface,
-      body: Column(
-        children: [
-          _buildHeader(context),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                AppDimens.pageHorizontalPadding,
-                20,
-                AppDimens.pageHorizontalPadding,
-                24,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildProfileCard(context),
-                  const SizedBox(height: 28),
-                  _buildSectionHeader(context, 'ACCOUNT'),
-                  const SizedBox(height: 10),
-                  SettingsTile(
-                    icon: Icons.lock_outline,
-                    title: 'Change Password',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ChangePasswordScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  SettingsTile(
-                    icon: Icons.notifications_outlined,
-                    title: 'Notification Settings',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const NotificationSettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 28),
-                  SizedBox(
-                    width: double.infinity,
-                    height: AppDimens.buttonHeight,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _confirmLogout(context),
-                      icon: const Icon(Icons.logout, size: 20),
-                      label: const Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontSize: AppDimens.bodyFontSize,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: scheme.error,
-                        side: BorderSide(color: scheme.error, width: 1.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppDimens.borderRadiusCard),
-                        ),
-                      ),
+    final SessionController session = context.dependencies.sessionController;
+    return ListenableBuilder(
+      listenable: session,
+      builder: (context, _) => Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: Column(
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppDimens.pageHorizontalPadding,
+                  20,
+                  AppDimens.pageHorizontalPadding,
+                  24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildProfileCard(context, session),
+                    const SizedBox(height: 28),
+                    _buildSectionHeader(context, AppStrings.accountSection),
+                    const SizedBox(height: 10),
+                    SettingsTile(
+                      icon: Icons.lock_outline,
+                      title: AppStrings.changePassword,
+                      onTap: () => context.pushChangePassword(),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    SettingsTile(
+                      icon: Icons.notifications_outlined,
+                      title: AppStrings.notificationSettings,
+                      onTap: () => context.pushNotificationSettings(),
+                    ),
+                    const SizedBox(height: 28),
+                    _buildLogoutButton(context, session),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(
@@ -125,15 +101,13 @@ class ProfileScreen extends StatelessWidget {
         AppDimens.pageHorizontalPadding,
         20,
       ),
-      decoration: BoxDecoration(
-        color: scheme.primaryContainer,
-      ),
+      decoration: BoxDecoration(color: scheme.primaryContainer),
       child: SafeArea(
         bottom: false,
         child: Text(
-          'Profile & Settings',
+          AppStrings.profileTitle,
           style: TextStyle(
-            fontSize: 22,
+            fontSize: AppDimens.titleFontSize,
             fontWeight: FontWeight.bold,
             color: scheme.onPrimaryContainer,
           ),
@@ -142,8 +116,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileCard(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+  /// Handles every [ViewState] case: spinner while the session resolves, a
+  /// failure message, and the resolved identity.
+  Widget _buildProfileCard(BuildContext context, SessionController session) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    final AppUser? user = session.user;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -164,28 +141,55 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'Juan Dela Cruz',
+            user?.displayName ?? AppStrings.unknownUser,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: AppDimens.titleFontSize - 2,
               fontWeight: FontWeight.bold,
               color: scheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'juan@example.com',
+            user?.email ?? AppStrings.unknownUserEmail,
             style: TextStyle(
               fontSize: AppDimens.subtitleFontSize,
               color: scheme.onSurfaceVariant,
             ),
           ),
+          if (session.state.isLoading) ...[
+            const SizedBox(height: 16),
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2.2),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              AppStrings.sessionLoading,
+              style: TextStyle(
+                fontSize: AppDimens.tinyFontSize,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+          if (session.errorMessage != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              session.errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppDimens.smallFontSize,
+                color: scheme.error,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildSectionHeader(BuildContext context, String title) {
-    final scheme = Theme.of(context).colorScheme;
+    final ColorScheme scheme = Theme.of(context).colorScheme;
     return Text(
       title,
       style: TextStyle(
@@ -193,6 +197,32 @@ class ProfileScreen extends StatelessWidget {
         fontWeight: FontWeight.bold,
         letterSpacing: 1.2,
         color: scheme.onSurfaceVariant,
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, SessionController session) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: double.infinity,
+      height: AppDimens.buttonHeight,
+      child: OutlinedButton.icon(
+        onPressed: () => _confirmLogout(context, session),
+        icon: const Icon(Icons.logout, size: 20),
+        label: const Text(
+          AppStrings.logout,
+          style: TextStyle(
+            fontSize: AppDimens.bodyFontSize,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: scheme.error,
+          side: BorderSide(color: scheme.error, width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimens.borderRadiusCard),
+          ),
+        ),
       ),
     );
   }

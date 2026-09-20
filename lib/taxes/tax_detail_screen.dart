@@ -1,34 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/calculator/tax_calculator_screen.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
+import 'package:taxratesystem_mobile/constants/app_decorations.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-import 'package:taxratesystem_mobile/taxes/tax_data.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/di/dependency_scope.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
+import 'package:taxratesystem_mobile/domain/models/tax_reference.dart';
+import 'package:taxratesystem_mobile/domain/models/tax_type_id.dart';
+import 'package:taxratesystem_mobile/widgets/state_views.dart';
 
-class TaxDetailScreen extends StatelessWidget {
-  const TaxDetailScreen({
-    super.key,
-    required this.title,
-    required this.description,
-    required this.currentRate,
-    required this.brackets,
-    required this.effectiveDate,
-    required this.example,
-  });
+/// Explains one tax type.
+///
+/// Takes a [TaxTypeId] rather than a pre-fetched payload and resolves the
+/// reference data through the injected `TaxReferenceRepository`, so this screen
+/// owns the loading, empty and error states for its own content.
+class TaxDetailScreen extends StatefulWidget {
+  const TaxDetailScreen({super.key, required this.taxType});
 
-  TaxDetailScreen.fromData(TaxDetailData data, {super.key})
-      : title = data.title,
-        description = data.description,
-        currentRate = data.currentRate,
-        brackets = data.brackets,
-        effectiveDate = data.effectiveDate,
-        example = data.example;
+  final TaxTypeId taxType;
 
-  final String title;
-  final String description;
-  final String currentRate;
-  final List<TaxBracket> brackets;
-  final String effectiveDate;
-  final TaxExample example;
+  @override
+  State<TaxDetailScreen> createState() => _TaxDetailScreenState();
+}
+
+class _TaxDetailScreenState extends State<TaxDetailScreen> {
+  /// Built in [didChangeDependencies], not in `build`, so a rebuild does not
+  /// re-issue the repository call.
+  late Future<TaxDetailData?> _detail;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _detail =
+        context.dependencies.taxReferenceRepository.getDetail(widget.taxType);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<TaxDetailData?>(
+      future: _detail,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(body: SafeArea(child: AppLoadingView()));
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: SafeArea(
+              child: AppErrorStateView(
+                message: AppStrings.genericErrorMessage,
+              ),
+            ),
+          );
+        }
+        final TaxDetailData? data = snapshot.data;
+        if (data == null) {
+          return const Scaffold(
+            body: SafeArea(
+              child: AppEmptyStateView(
+                icon: Icons.description_outlined,
+                title: AppStrings.taxDetailMissingTitle,
+                message: AppStrings.taxDetailMissingMessage,
+              ),
+            ),
+          );
+        }
+        return _TaxDetailContent(taxType: widget.taxType, data: data);
+      },
+    );
+  }
+}
+
+/// Renders a resolved reference payload.
+///
+/// Split from the loader so the layout helpers below stay free of async
+/// handling and keep reading the same field names.
+class _TaxDetailContent extends StatelessWidget {
+  const _TaxDetailContent({required this.taxType, required this.data});
+
+  final TaxTypeId taxType;
+  final TaxDetailData data;
+
+  String get title => taxType.label;
+  String get description => data.description;
+  String get currentRate => data.currentRate;
+  List<TaxBracket> get brackets => data.brackets;
+  String get effectiveDate => data.effectiveDate;
+  TaxExample get example => data.example;
 
   @override
   Widget build(BuildContext context) {
@@ -58,31 +115,13 @@ class TaxDetailScreen extends StatelessWidget {
           AppDimens.pageHorizontalPadding,
           12,
         ),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
+        decoration: AppDecorations.bottomBar,
         child: SafeArea(
           child: SizedBox(
             width: double.infinity,
             height: AppDimens.buttonHeight,
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TaxCalculatorScreen(
-                      initialTaxType: title,
-                    ),
-                  ),
-                );
-              },
+              onPressed: () => context.pushCalculator(initialTaxType: taxType),
               icon: const Icon(Icons.calculate_outlined, size: 20),
               label: const Text(
                 'Calculate This Tax',
@@ -183,7 +222,7 @@ class TaxDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Current Rate',
+                AppStrings.currentRateLabel,
                 style: TextStyle(
                   fontSize: AppDimens.tinyFontSize,
                   color: Colors.white.withValues(alpha: 0.8),
@@ -193,7 +232,7 @@ class TaxDetailScreen extends StatelessWidget {
               Text(
                 currentRate,
                 style: const TextStyle(
-                  fontSize: 22,
+                  fontSize: AppDimens.titleFontSize,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -215,7 +254,7 @@ class TaxDetailScreen extends StatelessWidget {
           Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Text(
-              'Tax Brackets',
+              AppStrings.bracketsLabel,
               style: TextStyle(
                 fontSize: AppDimens.bodyFontSize,
                 fontWeight: FontWeight.bold,
@@ -238,7 +277,7 @@ class TaxDetailScreen extends StatelessWidget {
                 Expanded(
                   flex: 3,
                   child: Text(
-                    'Taxable Income',
+                    AppStrings.taxableIncomeDetailLabel,
                     style: TextStyle(
                       fontSize: AppDimens.smallFontSize,
                       fontWeight: FontWeight.w600,
@@ -249,7 +288,7 @@ class TaxDetailScreen extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: Text(
-                    'Tax Rate',
+                    AppStrings.taxRateColumnLabel,
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       fontSize: AppDimens.smallFontSize,
@@ -323,7 +362,7 @@ class TaxDetailScreen extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            'Effective Date: $effectiveDate',
+            '${AppStrings.effectiveDateLabel}: $effectiveDate',
             style: TextStyle(
               fontSize: AppDimens.subtitleFontSize,
               color: AppColors.textSecondary,
@@ -366,7 +405,7 @@ class TaxDetailScreen extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Example Calculation',
+                AppStrings.exampleTitle,
                 style: TextStyle(
                   fontSize: AppDimens.subtitleFontSize,
                   fontWeight: FontWeight.bold,
@@ -376,9 +415,9 @@ class TaxDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          _buildExampleRow('Taxable Income', example.income),
+          _buildExampleRow(AppStrings.amountLabel, example.amount),
           const SizedBox(height: 8),
-          _buildExampleRow('Computation', example.computation),
+          _buildExampleRow(AppStrings.computationLabel, example.computation),
           const SizedBox(height: 10),
           Container(
             width: double.infinity,
@@ -391,7 +430,7 @@ class TaxDetailScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Estimated Tax',
+                  AppStrings.estimatedTaxLabel,
                   style: TextStyle(
                     fontSize: AppDimens.subtitleFontSize,
                     fontWeight: FontWeight.w600,
@@ -442,17 +481,7 @@ class TaxDetailScreen extends StatelessWidget {
     );
   }
 
-  BoxDecoration _cardDecoration() {
-    return BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppDimens.borderRadiusCard),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    );
-  }
+  /// Shared card recipe (defined once in [AppDecorations] rather than repeated
+  /// in every panel of this screen).
+  BoxDecoration _cardDecoration() => AppDecorations.card;
 }

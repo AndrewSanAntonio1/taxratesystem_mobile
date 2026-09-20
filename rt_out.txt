@@ -1,0 +1,110 @@
+00:00 +0: loading C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart
+00:00 +0: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +1: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +2: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +3: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +4: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +5: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +6: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +7: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +8: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +9: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +10: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +11: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +12: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +13: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +14: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +15: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +16: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +17: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +18: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +19: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +20: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +21: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +22: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +23: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +24: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +25: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +26: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +27: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +28: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +29: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +30: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +31: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +32: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:01 +33: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +34: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +35: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +36: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +37: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +38: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +39: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +40: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +41: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +42: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +43: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +44: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +45: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +46: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +47: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +48: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +49: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +50: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +51: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +52: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: The step renders the reference layout
+00:02 +53: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) A valid signup form shows the account-created confirmation
+00:02 +54: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) A valid signup form shows the account-created confirmation
+00:02 +55: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) A valid signup form shows the account-created confirmation
+00:03 +56: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) A valid signup form shows the account-created confirmation
+00:03 +57: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) A valid signup form shows the account-created confirmation
+00:04 +58: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) A valid signup form shows the account-created confirmation
+
+Warning: A call to tap() with finder "Found 1 widget with text "Country": [
+  Text("Country", dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+]" derived an Offset (Offset(104.0, 567.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#2565f relayoutBoundary=up8
+The hit test result at that offset is: HitTestResult(RenderParagraph#eacb1@Offset(56.0, 14.0), RenderAnimatedOpacity#f9de7@Offset(56.0, 14.0), _RenderDecoration#fd2bd@Offset(80.0, 30.0), RenderSemanticsAnnotations#d6cff@Offset(80.0, 30.0), RenderPointerListener#a7727@Offset(80.0, 30.0), RenderSemanticsGestureHandler#f600b@Offset(80.0, 30.0), RenderMouseRegion#32d39@Offset(80.0, 30.0), RenderSemanticsAnnotations#c5f3a@Offset(80.0, 30.0), RenderSemanticsAnnotations#44040@Offset(80.0, 30.0), RenderSemanticsAnnotations#12678@Offset(80.0, 30.0), RenderSemanticsAnnotations#f116e@Offset(80.0, 30.0), RenderFlex#29b10@Offset(80.0, 234.0), RenderSemanticsAnnotations#aedff@Offset(80.0, 234.0), RenderFlex#60819@Offset(80.0, 495.0), RenderPadding#61a68@Offset(104.0, 567.0), _RenderSingleChildViewport#cb2bf@Offset(104.0, 567.0), RenderIgnorePointer#a4d16@Offset(104.0, 567.0), RenderSemanticsAnnotations#6e2ec@Offset(104.0, 567.0), RenderPointerListener#595a0@Offset(104.0, 567.0), RenderSemanticsGestureHandler#58825@Offset(104.0, 567.0), RenderPointerListener#28428@Offset(104.0, 567.0), _RenderScrollSemantics#dca0c@Offset(104.0, 567.0), RenderClipRect#b603f@Offset(104.0, 567.0), RenderPadding#4c624@Offset(104.0, 567.0), RenderCustomMultiChildLayoutBox#2ec87@Offset(104.0, 567.0), _RenderInkFeatures#474b9@Offset(104.0, 567.0), RenderPhysicalModel#f7429@Offset(104.0, 567.0), RenderSemanticsAnnotations#e9c85@Offset(104.0, 567.0), RenderRepaintBoundary#14739@Offset(104.0, 567.0), RenderIgnorePointer#3a8fa@Offset(104.0, 567.0), RenderAnimatedOpacity#8c7ca@Offset(104.0, 567.0), RenderAnimatedOpacity#a2dd8@Offset(104.0, 567.0), _RenderColoredBox#a686f@Offset(104.0, 567.0), RenderAnimatedOpacity#e1d8c@Offset(104.0, 567.0), RenderIgnorePointer#13fe9@Offset(104.0, 567.0), RenderAnimatedOpacity#098eb@Offset(104.0, 567.0), RenderRepaintBoundary#4d41c@Offset(104.0, 567.0), RenderSemanticsAnnotations#ad8df@Offset(104.0, 567.0), RenderOffstage#c69c4@Offset(104.0, 567.0), RenderSemanticsAnnotations#17065@Offset(104.0, 567.0), _RenderTheater#e2167@Offset(104.0, 567.0), RenderAbsorbPointer#a0528@Offset(104.0, 567.0), RenderPointerListener#02908@Offset(104.0, 567.0), RenderSemanticsAnnotations#06142@Offset(104.0, 567.0), RenderCustomPaint#fc82c@Offset(104.0, 567.0), RenderSemanticsAnnotations#92943@Offset(104.0, 567.0), RenderSemanticsAnnotations#8cb88@Offset(104.0, 567.0), RenderSemanticsAnnotations#b1ae9@Offset(104.0, 567.0), RenderTapRegionSurface#9a47d@Offset(104.0, 567.0), RenderSemanticsAnnotations#6f88a@Offset(104.0, 567.0), RenderSemanticsAnnotations#7e661@Offset(104.0, 567.0), HitTestEntry<HitTestTarget>#062ea(_ReusableRenderView#a6b07), HitTestEntry<HitTestTarget>#e954f(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/Andrew%20San%20Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart:56:20)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:04 +59: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/new_password_screen_test.dart: Resetting closes with the success card and returns to login
+00:04 +60: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) Proceed to Login on the confirmation resets the flow to login
+00:05 +61: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) Proceed to Login on the confirmation resets the flow to login
+
+Warning: A call to tap() with finder "Found 1 widget with text "Country": [
+  Text("Country", dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+]" derived an Offset (Offset(104.0, 567.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#b94c6 relayoutBoundary=up8
+The hit test result at that offset is: HitTestResult(RenderParagraph#805ea@Offset(56.0, 14.0), RenderAnimatedOpacity#e7228@Offset(56.0, 14.0), _RenderDecoration#610b8@Offset(80.0, 30.0), RenderSemanticsAnnotations#4569c@Offset(80.0, 30.0), RenderPointerListener#ee79c@Offset(80.0, 30.0), RenderSemanticsGestureHandler#78006@Offset(80.0, 30.0), RenderMouseRegion#2a071@Offset(80.0, 30.0), RenderSemanticsAnnotations#94b9d@Offset(80.0, 30.0), RenderSemanticsAnnotations#d5550@Offset(80.0, 30.0), RenderSemanticsAnnotations#af59d@Offset(80.0, 30.0), RenderSemanticsAnnotations#b78de@Offset(80.0, 30.0), RenderFlex#ada0a@Offset(80.0, 234.0), RenderSemanticsAnnotations#93b09@Offset(80.0, 234.0), RenderFlex#24ba4@Offset(80.0, 495.0), RenderPadding#80774@Offset(104.0, 567.0), _RenderSingleChildViewport#23fa5@Offset(104.0, 567.0), RenderIgnorePointer#b30fc@Offset(104.0, 567.0), RenderSemanticsAnnotations#a1bb1@Offset(104.0, 567.0), RenderPointerListener#f0cc9@Offset(104.0, 567.0), RenderSemanticsGestureHandler#535d3@Offset(104.0, 567.0), RenderPointerListener#30b51@Offset(104.0, 567.0), _RenderScrollSemantics#88549@Offset(104.0, 567.0), RenderClipRect#40a21@Offset(104.0, 567.0), RenderPadding#78330@Offset(104.0, 567.0), RenderCustomMultiChildLayoutBox#25809@Offset(104.0, 567.0), _RenderInkFeatures#ac08b@Offset(104.0, 567.0), RenderPhysicalModel#a2901@Offset(104.0, 567.0), RenderSemanticsAnnotations#953a1@Offset(104.0, 567.0), RenderRepaintBoundary#08343@Offset(104.0, 567.0), RenderIgnorePointer#88f3b@Offset(104.0, 567.0), RenderAnimatedOpacity#71141@Offset(104.0, 567.0), RenderAnimatedOpacity#2a354@Offset(104.0, 567.0), _RenderColoredBox#c0e51@Offset(104.0, 567.0), RenderAnimatedOpacity#ff947@Offset(104.0, 567.0), RenderIgnorePointer#048cf@Offset(104.0, 567.0), RenderAnimatedOpacity#a3434@Offset(104.0, 567.0), RenderRepaintBoundary#8f462@Offset(104.0, 567.0), RenderSemanticsAnnotations#47eb0@Offset(104.0, 567.0), RenderOffstage#c2cd3@Offset(104.0, 567.0), RenderSemanticsAnnotations#686d8@Offset(104.0, 567.0), _RenderTheater#f0dae@Offset(104.0, 567.0), RenderAbsorbPointer#9b201@Offset(104.0, 567.0), RenderPointerListener#95380@Offset(104.0, 567.0), RenderSemanticsAnnotations#5676b@Offset(104.0, 567.0), RenderCustomPaint#62092@Offset(104.0, 567.0), RenderSemanticsAnnotations#cd63c@Offset(104.0, 567.0), RenderSemanticsAnnotations#5f6a1@Offset(104.0, 567.0), RenderSemanticsAnnotations#cf31a@Offset(104.0, 567.0), RenderTapRegionSurface#057ec@Offset(104.0, 567.0), RenderSemanticsAnnotations#fc8de@Offset(104.0, 567.0), RenderSemanticsAnnotations#bcd4a@Offset(104.0, 567.0), HitTestEntry<HitTestTarget>#136c8(_ReusableRenderView#a6b07), HitTestEntry<HitTestTarget>#69bab(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/Andrew%20San%20Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart:87:22)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:05 +62: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: signup (one page only — no verification or review step) The signup CTA is the flat green pill of the reference
+00:05 +63: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: forgot-password reset flow (unchanged) A verified reset code continues to the new-password step
+00:05 +64: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: forgot-password reset flow (unchanged) The address typed on the forgot-password step is displayed
+00:05 +65: C:/Users/Andrew San Antonio/taxratesystem_mobile/test/auth/verification_screen_test.dart: forgot-password reset flow (unchanged) The reset step falls back when no address was entered
+00:06 +66: All tests passed!

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/calculator/history_screen.dart';
-import 'package:taxratesystem_mobile/calculator/tax_calculator_screen.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -151,7 +151,7 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Tax Calculator',
+            AppStrings.taxCalculatorTitle,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -170,17 +170,10 @@ class DashboardScreen extends StatelessWidget {
           SizedBox(
             height: 40,
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const TaxCalculatorScreen(),
-                  ),
-                );
-              },
+              onPressed: () => context.pushCalculator(),
               icon: const Icon(Icons.calculate_outlined, size: 18),
               label: const Text(
-                'Calculate Tax',
+                AppStrings.calculateTax,
                 style: TextStyle(
                   fontSize: AppDimens.smallFontSize,
                   fontWeight: FontWeight.w600,
@@ -258,17 +251,10 @@ class DashboardScreen extends StatelessWidget {
           SizedBox(
             height: 40,
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const HistoryScreen(),
-                  ),
-                );
-              },
+              onPressed: () => context.pushHistory(),
               icon: const Icon(Icons.history, size: 18),
               label: const Text(
-                'View History',
+                AppStrings.navHistory,
                 style: TextStyle(
                   fontSize: AppDimens.smallFontSize,
                   fontWeight: FontWeight.w600,

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-import 'package:taxratesystem_mobile/auth/account_setup_screen.dart';
-import 'package:taxratesystem_mobile/auth/registration_data.dart';
-import 'package:taxratesystem_mobile/widgets/branded_header.dart';
-import 'package:taxratesystem_mobile/widgets/step_progress_indicator.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
+import 'package:taxratesystem_mobile/widgets/app_password_field.dart';
+import 'package:taxratesystem_mobile/widgets/brand_mark.dart';
 import 'package:taxratesystem_mobile/widgets/primary_button.dart';
 
+/// Redesigned against the project's `signup.png` reference: a white page whose
+/// whole spine is the brand mark, one centred "Sign Up" title, four borderless
+/// capsule fields (full name, phone, password, country) and the green CTA above
+/// a quiet sign-in line.
+///
+/// One page only: Sign Up is the whole flow — a valid form shows the
+/// "Account created" confirmation and returns to login. There is no account
+/// verification or review step after it.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -15,118 +23,125 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _brgyController = TextEditingController();
-  final _streetController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _provinceController = TextEditingController();
-  final _zipController = TextEditingController();
-  String? _suffix;
-  DateTime? _dateOfBirth;
+  // Vertical rhythm carried over from the other redesigned auth screens
+  // (NewPasswordScreen): a long band above the mark, a wide one before the
+  // title, then tight spacing through the fields and the CTA.
+  static const double _topSpacing = 72;
+  static const double _markToTitleSpacing = 64;
+  static const double _titleToFieldSpacing = 47;
+  static const double _fieldGap = 12;
+  static const double _fieldToCtaSpacing = 24;
+  static const double _ctaToFootnoteSpacing = 6;
+
+  /// "Sign Up" title of the reference, between the old [AppDimens.titleFontSize]
+  /// (22) and header size (28) — measured as the page's dominant line there.
+  static const double _titleFontSize = 32;
+
+  final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _country;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _brgyController.dispose();
-    _streetController.dispose();
-    _cityController.dispose();
-    _provinceController.dispose();
-    _zipController.dispose();
+    _fullNameController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  /// Serialises the four capsule fields and finishes the flow: a valid form
+  /// shows the "Account created" confirmation, and acknowledging it lands the
+  /// user on login. Sign Up is one page — there is no verification or review
+  /// step after it.
+  void _handleSignUp() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    _showAccountCreatedModal();
+  }
+
+  /// "Account Created Successfully!" card, carried over from the retired
+  /// review step: the flow's confirmation, whose button resets the app to
+  /// login (discarding the signup state with it).
+  void _showAccountCreatedModal() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => _AccountCreatedDialog(
+        onProceed: () {
+          Navigator.of(dialogContext).pop(); // close the card first
+          context.replaceWithLogin(); // then reset the flow to login
+        },
+      ),
+    );
+  }
+
+  /// Escape hatch of the sign-in line. Normally the screen was pushed from
+  /// login, so popping keeps whatever the user had typed there; a deep-linked
+  /// screen with no stack falls back to replacing with login, as the reset
+  /// flow's footnote does.
+  void _goToLogin() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      context.replaceWithLogin();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: Material(
-        color: AppColors.surface,
-        elevation: 8,
-        child: SafeArea(
-          minimum: const EdgeInsets.fromLTRB(
-            AppDimens.footerPaddingH,
-            AppDimens.footerPaddingV,
-            AppDimens.footerPaddingH,
-            AppDimens.footerPaddingV,
-          ),
-          child: PrimaryButton(
-            text: 'Next',
-            onPressed: _handleNext,
-          ),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
+          // The CTA scrolls with the form, as on the other redesigned auth
+          // screens, so the keyboard cannot trap the button.
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(
             AppDimens.pageHorizontalPadding,
-            AppDimens.pageTopPadding,
+            _topSpacing,
             AppDimens.pageHorizontalPadding,
             AppDimens.pageBottomPadding,
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const BrandedHeader(),
-              const SizedBox(height: 20),
-              const StepProgressIndicator(totalSteps: 4, currentStep: 0),
-              const SizedBox(height: 24),
+              const BrandMark(),
+              const SizedBox(height: _markToTitleSpacing),
               Text(
-                'Create Account',
+                AppStrings.signUpTitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: AppDimens.titleFontSize,
+                  fontSize: _titleFontSize,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textDark,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Please provide your personal and address details',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppDimens.subtitleFontSize,
-                  color: AppColors.textSecondary,
+              const SizedBox(height: _titleToFieldSpacing),
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildFullNameField(),
+                    const SizedBox(height: _fieldGap),
+                    _buildPhoneField(),
+                    const SizedBox(height: _fieldGap),
+                    _buildPasswordField(),
+                    const SizedBox(height: _fieldGap),
+                    _buildCountryDropdown(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              _buildSectionHeader(Icons.person_outlined, 'Personal Information'),
-              const SizedBox(height: 16),
-              _buildFirstNameRow(),
-              const SizedBox(height: 16),
-              _buildDateOfBirthField(),
-              const SizedBox(height: 16),
-              _buildEmailField(),
-              const SizedBox(height: 24),
-              _buildSectionHeader(Icons.home_outlined, 'Address Information'),
-              const SizedBox(height: 16),
-              _buildTextField(_brgyController, 'Brgy', Icons.location_on_outlined),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(_streetController, 'Street', Icons.streetview),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildTextField(_cityController, 'City', Icons.location_city_outlined),
-                  ),
-                ],
+              const SizedBox(height: _fieldToCtaSpacing),
+              PrimaryButton(
+                text: AppStrings.signUpAction,
+                backgroundColor: AppColors.actionGreen,
+                showShadow: false,
+                onPressed: _handleSignUp,
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(_provinceController, 'Province', Icons.map_outlined),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildTextField(_zipController, 'Zip Code', Icons.numbers, keyboardType: TextInputType.number),
-                  ),
-                ],
-              ),
+              const SizedBox(height: _ctaToFootnoteSpacing),
+              _buildSignInLine(),
             ],
           ),
         ),
@@ -134,217 +149,230 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _handleNext() {
-    final data = RegistrationData(
-      fullName: _firstNameController.text.trim(),
-      gender: '',
-      birthDate: _dateOfBirth,
-      contactNumber: '',
-      brgy: _brgyController.text.trim(),
-      street: _streetController.text.trim(),
-      city: _cityController.text.trim(),
-      province: _provinceController.text.trim(),
-      zip: _zipController.text.trim(),
-      email: _emailController.text.trim(),
-    );
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => AccountSetupScreen(registrationData: data),
+
+  /// Capsule of the auth redesign: the mint fill alone marks the input and the
+  /// placeholder carries the label, as on the other redesigned auth screens.
+  /// The three text fields share it so they cannot drift apart; the password
+  /// capsule's reveal toggle lives in [AppPasswordField].
+  InputDecoration _capsuleDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(
+        fontSize: AppDimens.bodyFontSize,
+        color: AppColors.textMuted,
       ),
+      filled: true,
+      fillColor: AppColors.inputMint,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.filledInputPaddingH,
+        vertical: AppDimens.capsuleInputPaddingV,
+      ),
+      border: _capsuleBorder(),
+      enabledBorder: _capsuleBorder(),
+      focusedBorder: _capsuleBorder(AppColors.actionGreen),
     );
   }
 
-  Widget _buildSectionHeader(IconData icon, String title) {
+  /// Flat by default; [focusColor] draws the focus ring in the action colour,
+  /// since a borderless capsule gives no other focus feedback.
+  OutlineInputBorder _capsuleBorder([Color? focusColor]) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppDimens.borderRadiusLarge),
+      borderSide: focusColor == null
+          ? BorderSide.none
+          : BorderSide(color: focusColor, width: 1.5),
+    );
+  }
+
+  Widget _buildFullNameField() {
+    return TextFormField(
+      controller: _fullNameController,
+      keyboardType: TextInputType.name,
+      textCapitalization: TextCapitalization.words,
+      style: const TextStyle(
+        fontSize: AppDimens.bodyFontSize,
+        color: AppColors.textDark,
+      ),
+      decoration: _capsuleDecoration(AppStrings.fullNameHint),
+      validator: (value) => (value == null || value.trim().isEmpty)
+          ? AppStrings.fullNameRequired
+          : null,
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return TextFormField(
+      controller: _phoneController,
+      keyboardType: TextInputType.phone,
+      style: const TextStyle(
+        fontSize: AppDimens.bodyFontSize,
+        color: AppColors.textDark,
+      ),
+      decoration: _capsuleDecoration(AppStrings.phoneHint),
+      validator: (value) => (value == null || value.trim().isEmpty)
+          ? AppStrings.phoneRequired
+          : null,
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return AppPasswordField(
+      controller: _passwordController,
+      hintText: AppStrings.passwordHint,
+      obscure: _obscurePassword,
+      onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
+      style: AppPasswordFieldStyle.capsule,
+      validator: (value) =>
+          (value == null || value.isEmpty) ? AppStrings.passwordRequired : null,
+    );
+  }
+
+  /// Reference's fourth capsule. A value is mandatory — the validator marks it
+  /// like the other fields — and the choice lands in [RegistrationData.country].
+  Widget _buildCountryDropdown() {
+    return DropdownButtonFormField<String>(
+      // initialValue, not the deprecated `value` — this is a form field and the
+      // selection starts empty (the hint shows) until the user picks a country.
+      initialValue: _country,
+      isExpanded: true,
+      icon: const Icon(
+        Icons.keyboard_arrow_down,
+        color: AppColors.textMuted,
+      ),
+      dropdownColor: AppColors.surface,
+      style: const TextStyle(
+        fontSize: AppDimens.bodyFontSize,
+        color: AppColors.textDark,
+      ),
+      decoration: _capsuleDecoration(AppStrings.countryHint),
+      items: AppStrings.signupCountries
+          .map(
+            (country) => DropdownMenuItem<String>(
+              value: country,
+              child: Text(country),
+            ),
+          )
+          .toList(),
+      onChanged: (value) => setState(() => _country = value),
+      validator: (value) =>
+          (value == null || value.isEmpty) ? AppStrings.countryRequired : null,
+    );
+  }
+
+  /// "Already have an account? Sign In" footnote of the reference, under the
+  /// CTA instead of the old top-right back arrow. Popping keeps the login
+  /// screen and whatever the user had typed there; the replacement fallback
+  /// serves deep links, where nothing sits underneath to pop to.
+  Widget _buildSignInLine() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, color: AppColors.textDark, size: 22),
-        const SizedBox(width: 8),
         Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textDark,
+          AppStrings.alreadyHaveAccount,
+          style: const TextStyle(
+            fontSize: AppDimens.bodyFontSize,
+            color: AppColors.textMuted,
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildFirstNameRow() {
-    return Row(
-      children: [
-        Expanded(
-          flex: 3,
-          child: TextField(
-            controller: _firstNameController,
-            keyboardType: TextInputType.name,
-            textCapitalization: TextCapitalization.words,
-            style: TextStyle(color: AppColors.textDark),
-            decoration: InputDecoration(
-              labelText: 'First Name *',
-              hintText: 'First Name *',
-              hintStyle: TextStyle(color: AppColors.textSecondary),
-              labelStyle: TextStyle(color: AppColors.textSecondary),
-              floatingLabelStyle: TextStyle(color: AppColors.textDark),
-              filled: true,
-              fillColor: AppColors.inputFill,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-                borderSide: const BorderSide(color: AppColors.lightBlue, width: 2),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppDimens.inputContentPaddingH,
-                vertical: AppDimens.inputContentPaddingV,
-              ),
-            ),
+        TextButton(
+          onPressed: _goToLogin,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            minimumSize: const Size(0, 0),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          flex: 1,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: AppColors.inputFill,
-              borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-            ),
-            child: DropdownButton<String>(
-              value: _suffix,
-              isExpanded: true,
-              underline: const SizedBox(),
-              dropdownColor: AppColors.surface,
-              hint: Text(
-                'Suffix',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              style: TextStyle(color: AppColors.textDark, fontSize: 14),
-              items: ['None', 'JR', 'SR', 'II', 'III', 'IV', 'V']
-                  .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _suffix = value!;
-                });
-              },
+          child: Text(
+            AppStrings.signIn,
+            style: const TextStyle(
+              fontSize: AppDimens.bodyFontSize,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textDark,
             ),
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildDateOfBirthField() {
-    return GestureDetector(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: _dateOfBirth ?? DateTime(2000),
-          firstDate: DateTime(1900),
-          lastDate: DateTime.now(),
-        );
-        if (picked != null) {
-          setState(() {
-            _dateOfBirth = picked;
-          });
-        }
-      },
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: 'Date of Birth',
-          hintText: 'Date of Birth',
-          hintStyle: TextStyle(color: AppColors.textSecondary),
-          labelStyle: TextStyle(color: AppColors.textSecondary),
-          floatingLabelStyle: TextStyle(color: AppColors.textDark),
-          prefixIcon: const Icon(Icons.calendar_today_outlined),
-          filled: true,
-          fillColor: AppColors.inputFill,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-            borderSide: const BorderSide(color: AppColors.lightBlue, width: 2),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimens.inputContentPaddingH,
-            vertical: AppDimens.inputContentPaddingV,
-          ),
-        ),
-        child: Text(
-          _dateOfBirth != null
-              ? '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}'
-              : 'Select date',
-          style: TextStyle(
-            color: _dateOfBirth != null ? AppColors.textDark : AppColors.textSecondary,
-            fontSize: 16,
-          ),
-        ),
+/// "Account Created Successfully!" card of the finished signup, carried over
+/// from the retired review step: the green check, the headline, one explainer
+/// line and the single "Proceed to Login" CTA that closes the flow.
+class _AccountCreatedDialog extends StatelessWidget {
+  const _AccountCreatedDialog({required this.onProceed});
+
+  final VoidCallback onProceed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimens.borderRadiusLarge),
       ),
-    );
-  }
-
-  Widget _buildEmailField() {
-    return TextField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
-      style: TextStyle(color: AppColors.textDark),
-      decoration: InputDecoration(
-        labelText: 'Email Address *',
-        hintText: 'Email Address *',
-        hintStyle: TextStyle(color: AppColors.textSecondary),
-        labelStyle: TextStyle(color: AppColors.textSecondary),
-        floatingLabelStyle: TextStyle(color: AppColors.textDark),
-        prefixIcon: const Icon(Icons.email_outlined),
-        filled: true,
-        fillColor: AppColors.inputFill,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-          borderSide: const BorderSide(color: AppColors.lightBlue, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimens.inputContentPaddingH,
-          vertical: AppDimens.inputContentPaddingV,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {TextInputType keyboardType = TextInputType.text}) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      style: TextStyle(color: AppColors.textDark),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: label,
-        hintStyle: TextStyle(color: AppColors.textSecondary),
-        labelStyle: TextStyle(color: AppColors.textSecondary),
-        floatingLabelStyle: TextStyle(color: AppColors.textDark),
-        prefixIcon: Icon(icon),
-        filled: true,
-        fillColor: AppColors.inputFill,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-          borderSide: const BorderSide(color: AppColors.lightBlue, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimens.inputContentPaddingH,
-          vertical: AppDimens.inputContentPaddingV,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 32, 28, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: AppColors.successCheck,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check,
+                color: Colors.white,
+                size: 44,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              AppStrings.accountCreatedTitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppDimens.titleFontSize,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDark,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              AppStrings.accountCreatedMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppDimens.subtitleFontSize,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: AppDimens.buttonHeight,
+              child: ElevatedButton(
+                onPressed: onProceed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.deepNavy,
+                  foregroundColor: AppColors.textPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppDimens.borderRadiusLarge),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  AppStrings.accountCreatedAction,
+                  style: TextStyle(
+                    fontSize: AppDimens.bodyFontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

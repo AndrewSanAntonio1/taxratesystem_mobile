@@ -14,8 +14,31 @@ class AppDimens {
   static const double inputContentPaddingH = 16;
   static const double inputContentPaddingV = 11;
 
+  /// Filled (borderless) input controls of the auth redesign — a roomier field
+  /// than [inputContentPaddingH]/[inputContentPaddingV] and a softer corner.
+  static const double filledInputPaddingH = 20;
+  static const double filledInputPaddingV = 15;
+  static const double borderRadiusField = 16;
+
+  /// Capsule password fields of the create-new-password reference
+  /// (`create-newpassword.png`): a stadium whose corner radius is half its
+  /// height — [borderRadiusLarge] — inset by [filledInputPaddingH] on the sides.
+  /// Together with the placeholder's line box this padding lands the 56pt field
+  /// height measured in that reference, and the fill covers all of it because the
+  /// height is produced by the padding rather than imposed on the container.
+  static const double capsuleInputPaddingV = 16;
+  static const double capsuleToggleSize = 36;
+
   static const double otpBoxWidth = 48;
   static const double otpBoxHeight = 56;
+
+  /// Underline-style slots of the verification redesign (`verification.png`):
+  /// the rule spans the whole slot (74pt wide there), so the slots flex to fill
+  /// the row and only the gap between them is fixed.
+  static const double otpSlotGap = 16;
+  static const double otpUnderlineWidth = 1.2;
+  static const double otpUnderlineFocusedWidth = 2;
+  static const double otpUnderlineContentBottom = 10;
 
   static const int otpLength = 6;
   static const int resendCooldownSeconds = 45;

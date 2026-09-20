@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/calculator/calculation.dart';
 import 'package:taxratesystem_mobile/calculator/widgets/breakdown_card.dart';
 import 'package:taxratesystem_mobile/calculator/widgets/details_card.dart';
 import 'package:taxratesystem_mobile/calculator/widgets/summary_banner.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
+import 'package:taxratesystem_mobile/constants/app_decorations.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/formatters/tax_formatters.dart';
+import 'package:taxratesystem_mobile/domain/models/saved_calculation.dart';
 
 class SavedCalculationScreen extends StatelessWidget {
   const SavedCalculationScreen({super.key, required this.saved});
@@ -22,7 +25,7 @@ class SavedCalculationScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back, color: AppColors.textDark),
         ),
         title: Text(
-          'Saved Calculation',
+          AppStrings.savedCalculationTitle,
           style: TextStyle(
             fontSize: AppDimens.bodyFontSize,
             fontWeight: FontWeight.bold,
@@ -40,16 +43,7 @@ class SavedCalculationScreen extends StatelessWidget {
           AppDimens.pageHorizontalPadding,
           12,
         ),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
+        decoration: AppDecorations.bottomBar,
         child: SafeArea(
           child: SizedBox(
             width: double.infinity,
@@ -58,7 +52,7 @@ class SavedCalculationScreen extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.arrow_back, size: 20),
               label: const Text(
-                'Back to History',
+                AppStrings.backToHistory,
                 style: TextStyle(
                   fontSize: AppDimens.bodyFontSize,
                   fontWeight: FontWeight.w600,
@@ -81,17 +75,17 @@ class SavedCalculationScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SummaryBanner(
-              taxType: calc.taxType,
+              taxType: calc.taxType.label,
               subtitle: 'Saved on ${formatLongDate(saved.savedAt)}',
-              amountLabel: 'Calculated Tax Amount',
+              amountLabel: AppStrings.calculatedTaxAmountLabel,
               amount: formatMoney(calc.calculatedTax),
             ),
             const SizedBox(height: 16),
             DetailsCard(
               rows: [
-                ('Taxable Base', formatMoney(calc.taxableIncome)),
-                ('Applicable Bracket', calc.applicableBracket),
-                ('Effective Date', calc.effectiveRule),
+                (AppStrings.taxableBaseLabel, formatMoney(calc.taxableIncome)),
+                (AppStrings.applicableBracketLabel, calc.applicableBracket),
+                (AppStrings.effectiveRuleLabel, calc.effectiveRule),
               ],
             ),
             const SizedBox(height: 16),

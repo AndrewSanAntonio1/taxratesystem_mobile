@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/calculator/calculation.dart';
-import 'package:taxratesystem_mobile/calculator/history_store.dart';
-import 'package:taxratesystem_mobile/calculator/saved_calculation_screen.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
+import 'package:taxratesystem_mobile/constants/app_decorations.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-
-enum _SortOrder { newest, oldest }
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/di/dependency_scope.dart';
+import 'package:taxratesystem_mobile/core/formatters/tax_formatters.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
+import 'package:taxratesystem_mobile/core/state/view_state.dart';
+import 'package:taxratesystem_mobile/domain/models/saved_calculation.dart';
+import 'package:taxratesystem_mobile/presentation/controllers/history_controller.dart';
+import 'package:taxratesystem_mobile/widgets/state_views.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key, this.showAppBar = true});
@@ -17,47 +21,34 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  _SortOrder _sortOrder = _SortOrder.newest;
+  late final HistoryController _history;
+  bool _didRequestLoad = false;
 
-  List<SavedCalculation> _sortedItems(HistoryStore store) {
-    final items = store.items;
-    if (_sortOrder == _SortOrder.newest) {
-      return items;
-    }
-    return [...items]..sort((a, b) => a.savedAt.compareTo(b.savedAt));
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _history = context.dependencies.historyController;
+    // Loaded once per mount so a calculation saved from the result screen is
+    // visible as soon as this tab is opened.
+    if (_didRequestLoad) return;
+    _didRequestLoad = true;
+    _history.load();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
-      appBar: widget.showAppBar ? _buildAppBar() : null,
+      appBar: widget.showAppBar ? _buildAppBar(context) : null,
       body: SafeArea(
         top: !widget.showAppBar,
         child: Column(
           children: [
-            if (!widget.showAppBar) _buildHeader(),
+            if (!widget.showAppBar) _buildHeader(context),
             Expanded(
               child: ListenableBuilder(
-                listenable: HistoryStore.instance,
-                builder: (context, _) {
-                  final items = _sortedItems(HistoryStore.instance);
-                  if (items.isEmpty) {
-                    return _buildEmptyState();
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppDimens.pageHorizontalPadding,
-                      20,
-                      AppDimens.pageHorizontalPadding,
-                      24,
-                    ),
-                    itemCount: items.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) =>
-                        _buildHistoryCard(context, items[index]),
-                  );
-                },
+                listenable: _history,
+                builder: (context, _) => _buildBody(context),
               ),
             ),
           ],
@@ -66,14 +57,45 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  /// Exhaustive over [ViewState], so "loading", "failed" and "nothing saved
+  /// yet" can never be conflated with an empty result set.
+  Widget _buildBody(BuildContext context) {
+    return switch (_history.state) {
+      ViewStateLoading<List<SavedCalculation>>() => const AppLoadingView(),
+      ViewStateError<List<SavedCalculation>>(:final String message) =>
+        AppErrorStateView(message: message, onRetry: _history.load),
+      ViewStateEmpty<List<SavedCalculation>>() => const AppEmptyStateView(
+          icon: Icons.history,
+          title: AppStrings.noSavedCalculationsTitle,
+          message: AppStrings.noSavedCalculationsMessage,
+        ),
+      ViewStateData<List<SavedCalculation>>() => _buildList(context),
+    };
+  }
+
+  Widget _buildList(BuildContext context) {
+    final List<SavedCalculation> items = _history.items;
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(
+        AppDimens.pageHorizontalPadding,
+        20,
+        AppDimens.pageHorizontalPadding,
+        24,
+      ),
+      itemCount: items.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, index) => _buildHistoryCard(context, items[index]),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
         icon: Icon(Icons.arrow_back, color: AppColors.textDark),
       ),
       title: Text(
-        'Calculation History',
+        AppStrings.calculationHistoryTitle,
         style: TextStyle(
           fontSize: AppDimens.bodyFontSize,
           fontWeight: FontWeight.bold,
@@ -87,25 +109,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-        AppDimens.pageHorizontalPadding,
-        16,
-        AppDimens.pageHorizontalPadding,
-        16,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.pageHorizontalPadding,
+        vertical: 16,
       ),
-      decoration: BoxDecoration(
-        color: AppColors.headerBackground,
-      ),
+      decoration: BoxDecoration(color: AppColors.headerBackground),
       child: Row(
         children: [
           Expanded(
             child: Text(
-              'Calculation History',
+              AppStrings.calculationHistoryTitle,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: AppDimens.titleFontSize,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textDark,
               ),
@@ -118,111 +136,34 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildSortMenu() {
-    return PopupMenuButton<_SortOrder>(
-      icon: Icon(Icons.tune, color: AppColors.textSecondary),
-      tooltip: 'Sort',
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      onSelected: (value) {
-        setState(() {
-          _sortOrder = value;
-        });
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: _SortOrder.newest,
-          child: Row(
-            children: [
-              Icon(
-                _sortOrder == _SortOrder.newest
-                    ? Icons.check
-                    : Icons.arrow_downward,
-                size: 18,
-                color: _sortOrder == _SortOrder.newest
-                    ? AppColors.focusBlue
-                    : AppColors.textSecondary,
-              ),
-              const SizedBox(width: 8),
-              const Text('Newest first'),
-            ],
-          ),
+    return ListenableBuilder(
+      listenable: _history,
+      builder: (context, _) => PopupMenuButton<HistorySortOrder>(
+        icon: Icon(Icons.tune, color: AppColors.textSecondary),
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimens.borderRadiusMedium),
         ),
-        PopupMenuItem(
-          value: _SortOrder.oldest,
-          child: Row(
-            children: [
-              Icon(
-                _sortOrder == _SortOrder.oldest
-                    ? Icons.check
-                    : Icons.arrow_upward,
-                size: 18,
-                color: _sortOrder == _SortOrder.oldest
-                    ? AppColors.focusBlue
-                    : AppColors.textSecondary,
-              ),
-              const SizedBox(width: 8),
-              const Text('Oldest first'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.all(AppDimens.pageHorizontalPadding),
-        padding: const EdgeInsets.all(28),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusCard),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: AppColors.inputSoft,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.history,
-                size: 34,
-                color: AppColors.focusBlue,
+        onSelected: _history.setSortOrder,
+        itemBuilder: (context) => [
+          for (final HistorySortOrder order in HistorySortOrder.values)
+            PopupMenuItem<HistorySortOrder>(
+              value: order,
+              child: Row(
+                children: [
+                  Icon(
+                    _history.sortOrder == order ? Icons.check : Icons.sort,
+                    size: 18,
+                    color: _history.sortOrder == order
+                        ? AppColors.focusBlue
+                        : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(order.label),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'No calculation history yet.',
-              style: TextStyle(
-                fontSize: AppDimens.bodyFontSize,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Your saved tax calculations will appear here.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: AppDimens.subtitleFontSize,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -230,27 +171,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildHistoryCard(BuildContext context, SavedCalculation saved) {
     final calc = saved.calculation;
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => SavedCalculationScreen(saved: saved),
-          ),
-        );
-      },
+      onTap: () => context.pushSavedCalculation(saved),
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusCard),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+        decoration: AppDecorations.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -258,7 +182,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    calc.taxType,
+                    calc.taxType.label,
                     style: TextStyle(
                       fontSize: AppDimens.bodyFontSize,
                       fontWeight: FontWeight.bold,
@@ -277,12 +201,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 14),
             _buildAmountRow(
-              'Taxable Amount',
+              AppStrings.taxableBaseLabel,
               formatMoney(calc.taxableIncome),
             ),
             const SizedBox(height: 8),
             _buildAmountRow(
-              'Tax Calculated',
+              AppStrings.calculatedTaxAmountLabel,
               formatMoney(calc.calculatedTax),
               highlighted: true,
             ),
@@ -290,22 +214,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SavedCalculationScreen(saved: saved),
-                    ),
-                  );
-                },
+                onPressed: () => context.pushSavedCalculation(saved),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.focusBlue,
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(0, 32),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text(
-                  'View Details >',
+                child: Text(
+                  AppStrings.viewDetails,
                   style: TextStyle(
                     fontSize: AppDimens.smallFontSize,
                     fontWeight: FontWeight.w600,
@@ -319,7 +236,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildAmountRow(String label, String value, {bool highlighted = false}) {
+  Widget _buildAmountRow(
+    String label,
+    String value, {
+    bool highlighted = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

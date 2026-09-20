@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:taxratesystem_mobile/calculator/calculation.dart';
-import 'package:taxratesystem_mobile/calculator/calculation_result_screen.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
+import 'package:taxratesystem_mobile/constants/app_decorations.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-import 'package:taxratesystem_mobile/taxes/tax_data.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/di/dependency_scope.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
+import 'package:taxratesystem_mobile/domain/models/tax_type_id.dart';
+import 'package:taxratesystem_mobile/presentation/controllers/calculator_controller.dart';
+import 'package:taxratesystem_mobile/presentation/tax_type_visuals.dart';
 
 class TaxCalculatorScreen extends StatefulWidget {
   const TaxCalculatorScreen({
@@ -13,7 +17,7 @@ class TaxCalculatorScreen extends StatefulWidget {
     this.showAppBar = true,
   });
 
-  final String? initialTaxType;
+  final TaxTypeId? initialTaxType;
   final bool showAppBar;
 
   @override
@@ -21,44 +25,47 @@ class TaxCalculatorScreen extends StatefulWidget {
 }
 
 class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
-  late String _selectedTaxType;
   final _amountController = TextEditingController();
-  String? _amountError;
+  late final CalculatorController _calculator;
 
   @override
-  void initState() {
-    super.initState();
-    _selectedTaxType = widget.initialTaxType ?? 'Personal Income Tax';
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Resolved here rather than in initState because it reads an
+    // InheritedWidget (the DependencyScope). The controller is screen-scoped:
+    // its form state is not needed once the user leaves.
+    _calculator = CalculatorController(
+      context.dependencies.taxCalculationRepository,
+      initialTaxType: widget.initialTaxType ?? TaxTypeId.personalIncome,
+    );
   }
 
   @override
   void dispose() {
     _amountController.dispose();
+    _calculator.dispose();
     super.dispose();
   }
 
-  void _calculate() {
-    final parsed = double.tryParse(_amountController.text.replaceAll(',', ''));
-    if (parsed == null || parsed <= 0) {
-      setState(() {
-        _amountError = 'Enter a valid taxable amount';
-      });
-      return;
-    }
-    setState(() {
-      _amountError = null;
-    });
-    final result = calculateTax(taxType: _selectedTaxType, amount: parsed);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CalculationResultScreen(calculation: result),
-      ),
-    );
+  /// Delegates validation and computation to [CalculatorController] and only
+  /// navigates when a result actually came back.
+  Future<void> _calculate() async {
+    final result = await _calculator.submit(_amountController.text);
+    if (!mounted || result == null) return;
+    context.pushCalculationResult(result);
   }
 
   @override
   Widget build(BuildContext context) {
+    // One listener around the whole screen: every child reads the controller's
+    // state (selected type, validation error, submitting flag) directly.
+    return ListenableBuilder(
+      listenable: _calculator,
+      builder: (context, _) => _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
       appBar: widget.showAppBar
@@ -68,7 +75,7 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
                 icon: Icon(Icons.arrow_back, color: AppColors.textDark),
               ),
               title: Text(
-                'Tax Calculator',
+                AppStrings.taxCalculatorTitle,
                 style: TextStyle(
                   fontSize: AppDimens.bodyFontSize,
                   fontWeight: FontWeight.bold,
@@ -102,10 +109,19 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
             width: double.infinity,
             height: AppDimens.buttonHeight,
             child: ElevatedButton.icon(
-              onPressed: _calculate,
-              icon: const Icon(Icons.calculate_outlined, size: 20),
+              onPressed: _calculator.canSubmit ? _calculate : null,
+              icon: _calculator.isSubmitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.calculate_outlined, size: 20),
               label: const Text(
-                'Calculate Tax',
+                AppStrings.calculateTax,
                 style: TextStyle(
                   fontSize: AppDimens.bodyFontSize,
                   fontWeight: FontWeight.bold,
@@ -114,6 +130,8 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.focusBlue,
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: AppColors.focusBlue,
+                disabledForegroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppDimens.borderRadiusCard),
@@ -136,7 +154,7 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Select Tax Type',
+                AppStrings.selectTaxType,
                 style: TextStyle(
                   fontSize: AppDimens.smallFontSize,
                   fontWeight: FontWeight.w600,
@@ -147,7 +165,7 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
               _buildDropdown(),
               const SizedBox(height: 24),
               Text(
-                'Taxable Income (PHP)',
+                AppStrings.taxableIncomeLabel,
                 style: TextStyle(
                   fontSize: AppDimens.smallFontSize,
                   fontWeight: FontWeight.w600,
@@ -156,6 +174,10 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
               ),
               const SizedBox(height: 8),
               _buildAmountField(),
+              if (_calculator.submitError != null) ...[
+                const SizedBox(height: 16),
+                _buildSubmitError(_calculator.submitError!),
+              ],
             ],
           ),
         ),
@@ -166,35 +188,41 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
   Widget _buildDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.inputSoft,
-        borderRadius: BorderRadius.circular(AppDimens.borderRadiusMedium),
-        border: Border.all(color: AppColors.divider, width: 1),
-      ),
+      decoration: AppDecorations.outlinedPanel,
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedTaxType,
+        child: DropdownButton<TaxTypeId>(
+          value: _calculator.selectedTaxType,
           isExpanded: true,
           dropdownColor: AppColors.surface,
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_drop_down,
             color: AppColors.textSecondary,
           ),
-          borderRadius: BorderRadius.circular(12),
-          items: taxTypes
-              .map(
-                (type) => DropdownMenuItem(
-                  value: type.name,
-                  child: _HoverableMenuOption(label: type.name),
+          borderRadius: BorderRadius.circular(AppDimens.borderRadiusMedium),
+          items: [
+            for (final TaxTypeId type in TaxTypeId.values)
+              DropdownMenuItem<TaxTypeId>(
+                value: type,
+                child: Row(
+                  children: [
+                    Icon(type.icon, size: 18, color: AppColors.accent),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        type.label,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: AppDimens.bodyFontSize,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              )
-              .toList(),
-          onChanged: (value) {
-            if (value != null) {
-              setState(() {
-                _selectedTaxType = value;
-              });
-            }
+              ),
+          ],
+          onChanged: (TaxTypeId? value) {
+            if (value != null) _calculator.selectTaxType(value);
           },
         ),
       ),
@@ -214,7 +242,7 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
         color: AppColors.textDark,
       ),
       decoration: InputDecoration(
-        prefixText: 'P ',
+        prefixText: AppStrings.amountInputPrefix,
         prefixStyle: TextStyle(
           fontSize: AppDimens.bodyFontSize,
           fontWeight: FontWeight.w600,
@@ -222,17 +250,17 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
         ),
         filled: true,
         fillColor: AppColors.surface,
-        hintText: 'Enter amount',
+        hintText: AppStrings.amountHint,
         hintStyle: TextStyle(
           fontSize: AppDimens.bodyFontSize,
           color: AppColors.textSecondary,
         ),
-        helperText: 'Enter annual gross taxable income',
+        helperText: AppStrings.amountHelper,
         helperStyle: TextStyle(
           fontSize: AppDimens.tinyFontSize,
           color: AppColors.textSecondary,
         ),
-        errorText: _amountError,
+        errorText: _calculator.amountError,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimens.inputContentPaddingH,
           vertical: AppDimens.inputContentPaddingV,
@@ -240,7 +268,7 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.borderRadiusMedium),
           borderSide: BorderSide(
-            color: _amountError == null
+            color: _calculator.amountError == null
                 ? AppColors.divider
                 : AppColors.error,
             width: 1,
@@ -261,39 +289,33 @@ class _TaxCalculatorScreenState extends State<TaxCalculatorScreen> {
       ),
     );
   }
-}
 
-class _HoverableMenuOption extends StatefulWidget {
-  const _HoverableMenuOption({required this.label});
-
-  final String label;
-
-  @override
-  State<_HoverableMenuOption> createState() => _HoverableMenuOptionState();
-}
-
-class _HoverableMenuOptionState extends State<_HoverableMenuOption> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: _hovered ? AppColors.inputFill : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-        ),
-        child: Text(
-          widget.label,
-          style: TextStyle(
-            fontSize: AppDimens.bodyFontSize,
-            color: AppColors.textDark,
+  /// Inline failure from the calculation repository (the error state), as
+  /// opposed to the field-level validation message shown by
+  /// [InputDecoration.errorText].
+  Widget _buildSubmitError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimens.borderRadiusMedium),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, size: 18, color: AppColors.error),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                fontSize: AppDimens.smallFontSize,
+                color: AppColors.error,
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

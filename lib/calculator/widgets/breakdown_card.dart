@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:taxratesystem_mobile/calculator/calculation.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/domain/models/breakdown_step.dart';
 
 class BreakdownCard extends StatelessWidget {
   const BreakdownCard({super.key, required this.steps});
@@ -27,9 +28,9 @@ class BreakdownCard extends StatelessWidget {
           Row(
             children: [
               _StepHeaderIcon(),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
-                'Step-by-Step Breakdown',
+                AppStrings.stepByStepBreakdown,
                 style: TextStyle(
                   fontSize: AppDimens.subtitleFontSize,
                   fontWeight: FontWeight.bold,
@@ -81,7 +82,7 @@ class _StepRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isTotal = step.label == 'Total Tax Due';
+    final bool isTotal = step.isTotal;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

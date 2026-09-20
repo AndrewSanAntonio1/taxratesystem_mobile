@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:taxratesystem_mobile/calculator/history_screen.dart';
 import 'package:taxratesystem_mobile/calculator/tax_calculator_screen.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/di/dependency_scope.dart';
 import 'package:taxratesystem_mobile/home/dashboard_screen.dart';
 import 'package:taxratesystem_mobile/profile/profile_screen.dart';
 import 'package:taxratesystem_mobile/taxes/taxes_screen.dart';
+import 'package:taxratesystem_mobile/widgets/docking_bar.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -15,6 +18,14 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _currentIndex = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Gives the profile tab an identity even when the session is restored
+    // rather than created by an explicit sign-in. Idempotent by design.
+    context.dependencies.sessionController.ensureLoaded();
+  }
 
   final _screens = const [
     DashboardScreen(),
@@ -29,46 +40,26 @@ class _HomeShellState extends State<HomeShell> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: _screens[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
+      bottomNavigationBar: DockingBar(
+        activeIndex: _currentIndex,
+        onSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        backgroundColor: AppColors.surface,
-        elevation: 8,
-        shadowColor: Colors.black.withValues(alpha: 0.1),
-        surfaceTintColor: Colors.transparent,
-        height: 64,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        indicatorColor: AppColors.focusBlue.withValues(alpha: 0.1),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined, color: AppColors.navInactive),
-            selectedIcon: Icon(Icons.home, color: AppColors.navActive),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined, color: AppColors.navInactive),
-            selectedIcon: Icon(Icons.receipt_long, color: AppColors.navActive),
-            label: 'Taxes',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calculate_outlined, color: AppColors.navInactive),
-            selectedIcon: Icon(Icons.calculate, color: AppColors.navActive),
-            label: 'Calculator',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.history_outlined, color: AppColors.navInactive),
-            selectedIcon: Icon(Icons.history, color: AppColors.navActive),
-            label: 'History',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline, color: AppColors.navInactive),
-            selectedIcon: Icon(Icons.person, color: AppColors.navActive),
-            label: 'Profile',
-          ),
+        icons: const [
+          Icons.home,
+          Icons.receipt_long,
+          Icons.calculate,
+          Icons.history,
+          Icons.person,
+        ],
+        labels: const [
+          AppStrings.navHome,
+          AppStrings.navTaxes,
+          AppStrings.navCalculator,
+          AppStrings.navHistory,
+          AppStrings.navProfile,
         ],
       ),
     );

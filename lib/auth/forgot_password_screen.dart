@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
 import 'package:taxratesystem_mobile/constants/app_dimens.dart';
-import 'package:taxratesystem_mobile/widgets/branded_header.dart';
-import 'package:taxratesystem_mobile/widgets/dash_divider.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
+import 'package:taxratesystem_mobile/widgets/brand_mark.dart';
 import 'package:taxratesystem_mobile/widgets/primary_button.dart';
-import 'package:taxratesystem_mobile/widgets/secondary_button.dart';
-import 'package:taxratesystem_mobile/auth/password_reset_otp_screen.dart';
 
+/// Step 1 of password recovery: collect the account email.
+///
+/// Redesigned against the project's `forgot-password.png` reference: one task
+/// per screen — a centred brand mark, a hero title, a single helper paragraph,
+/// one filled field and a full-width green CTA on white, with generous
+/// breathing room and no chrome.
+///
+/// The flow is unchanged: the address collected here is followed by the
+/// verification-code step ([context.openPasswordResetOtp]). The back
+/// affordance the reference omits is kept as a quiet text link, so the screen
+/// stays escapable without a platform gesture.
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -15,6 +25,16 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  // Vertical rhythm read off the 370x800 reference image: a long, empty band
+  // above the brand mark and a wide one between the mark and the title, then
+  // tight internal spacing through field and CTA.
+  static const double _topSpacing = 72;
+  static const double _logoToTitleSpacing = 56;
+  static const double _titleToSubtitleSpacing = 14;
+  static const double _subtitleToFieldSpacing = 32;
+  static const double _fieldToCtaSpacing = 18;
+  static const double _ctaToLinkSpacing = 20;
+
   final _emailController = TextEditingController();
   final _emailFocusNode = FocusNode();
 
@@ -29,38 +49,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      bottomNavigationBar: Material(
-        color: AppColors.surface,
-        elevation: 8,
-        child: SafeArea(
-          minimum: const EdgeInsets.fromLTRB(
-            AppDimens.footerPaddingH,
-            AppDimens.footerPaddingV,
-            AppDimens.footerPaddingH,
-            AppDimens.footerPaddingV,
-          ),
-          child: SecondaryButton(
-            text: 'Back to Login',
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(
             AppDimens.pageHorizontalPadding,
-            AppDimens.pageTopPadding,
+            _topSpacing,
             AppDimens.pageHorizontalPadding,
             AppDimens.pageBottomPadding,
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const BrandedHeader(),
-              const SizedBox(height: 16),
-              const DashDivider(activeIndex: 0),
-              const SizedBox(height: 20),
-              Text(
-                'Forgot Password?',
+              const BrandMark(),
+              const SizedBox(height: _logoToTitleSpacing),
+              const Text(
+                AppStrings.forgotPasswordTitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: AppDimens.titleFontSize,
@@ -68,29 +72,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   color: AppColors.textDark,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Enter your email address to reset your password.',
+              const SizedBox(height: _titleToSubtitleSpacing),
+              const Text(
+                AppStrings.forgotPasswordSubtitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: AppDimens.subtitleFontSize,
-                  color: AppColors.textSecondary,
+                  height: 1.45,
+                  color: AppColors.textMuted,
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: _subtitleToFieldSpacing),
               _buildEmailField(),
-              const SizedBox(height: 24),
+              const SizedBox(height: _fieldToCtaSpacing),
               PrimaryButton(
-                text: 'Send Verification Code',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PasswordResetOtpScreen(),
-                    ),
-                  );
-                },
+                text: AppStrings.sendVerificationCode,
+                backgroundColor: AppColors.actionGreen,
+                showShadow: false,
+                // The address travels to the code step, which displays it and
+                // sends the code to it.
+                onPressed: () => context.openPasswordResetOtp(
+                  email: _emailController.text.trim(),
+                ),
               ),
+              const SizedBox(height: _ctaToLinkSpacing),
+              _buildBackToLogin(),
             ],
           ),
         ),
@@ -98,36 +104,60 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
+  /// Borderless filled field: the mint fill alone marks the input, so the
+  /// placeholder carries the label (as in the reference).
   Widget _buildEmailField() {
     return TextField(
       controller: _emailController,
       focusNode: _emailFocusNode,
       keyboardType: TextInputType.emailAddress,
-      style: TextStyle(color: AppColors.textDark),
+      style: const TextStyle(
+        fontSize: AppDimens.bodyFontSize,
+        color: AppColors.textDark,
+      ),
       decoration: InputDecoration(
-        hintText: 'Email Address *',
-        hintStyle: TextStyle(color: AppColors.textSecondary),
-        prefixIcon: Icon(
-          Icons.email_outlined,
-          color: AppColors.textSecondary,
+        hintText: AppStrings.emailAddressHint,
+        hintStyle: const TextStyle(
+          fontSize: AppDimens.bodyFontSize,
+          color: AppColors.textMuted,
         ),
         filled: true,
-        fillColor: AppColors.inputSoft,
+        fillColor: AppColors.inputMint,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimens.inputContentPaddingH,
-          vertical: AppDimens.inputContentPaddingV,
+          horizontal: AppDimens.filledInputPaddingH,
+          vertical: AppDimens.filledInputPaddingV,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-          borderSide: BorderSide(color: AppColors.inputBorder, width: 1),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-          borderSide: BorderSide(color: AppColors.inputBorder, width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimens.borderRadiusSmall),
-          borderSide: const BorderSide(color: AppColors.focusBlue, width: 2),
+        border: _fieldBorder(),
+        enabledBorder: _fieldBorder(),
+        focusedBorder: _fieldBorder(AppColors.actionGreen),
+      ),
+    );
+  }
+
+  /// Flat by default; [focusColor] draws the focus ring in the CTA colour, since
+  /// a borderless field gives no other focus feedback.
+  OutlineInputBorder _fieldBorder([Color? focusColor]) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppDimens.borderRadiusField),
+      borderSide: focusColor == null
+          ? BorderSide.none
+          : BorderSide(color: focusColor, width: 1.5),
+    );
+  }
+
+  /// Quiet escape hatch. The reference screen is undecorated, but a user who
+  /// opened this form by mistake still needs a labelled way back to login.
+  Widget _buildBackToLogin() {
+    return Center(
+      child: TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text(
+          AppStrings.backToLogin,
+          style: TextStyle(
+            fontSize: AppDimens.subtitleFontSize,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textMuted,
+          ),
         ),
       ),
     );

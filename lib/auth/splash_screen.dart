@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:taxratesystem_mobile/constants/app_colors.dart';
-import 'package:taxratesystem_mobile/auth/login_screen.dart';
+import 'package:taxratesystem_mobile/constants/app_dimens.dart';
+import 'package:taxratesystem_mobile/constants/app_strings.dart';
+import 'package:taxratesystem_mobile/core/routing/app_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,12 +19,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(milliseconds: 2500), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    });
+    _timer = Timer(
+      const Duration(milliseconds: AppDimens.splashDurationMs),
+      () {
+        if (!mounted) return;
+        context.replaceWithLogin();
+      },
+    );
   }
 
   @override
@@ -47,10 +50,10 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'TaxRateSystem',
+                AppStrings.appName,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: AppDimens.headerFontSize,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textDark,
                 ),
